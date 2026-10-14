@@ -1,0 +1,10 @@
+setuptools==80.9.0
+-r requirements-analysis.txt
+# Python 3.10 no Windows faz o Basic Pitch usar ONNX Runtime por padrão,
+# evitando depender do TensorFlow para a transcrição local.
+basic-pitch==0.4.0
+onnxruntime>=1.18,<2
+music21==9.7.1
+# Demucs 4 requer torchaudio < 2.1; o instalador fixa o par compatível
+# torch 2.0.1 + torchaudio 2.0.2 antes deste arquivo.
+demucs==4.0.1

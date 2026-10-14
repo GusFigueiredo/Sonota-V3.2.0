@@ -1,0 +1,26 @@
+SONOTA V2.7 - IONIC ANGULAR + DESKTOP TAURI (FASE 2)
+
+Esta versão parte da migração Ionic Angular que foi compilada e testada no Windows.
+
+NOVO NESTA FASE
+- launcher desktop Tauri;
+- Sonota abre em janela própria, sem navegador;
+- backend Node inicia oculto junto do aplicativo;
+- dados persistem em %LOCALAPPDATA%\Sonota\data;
+- build de release inclui runtime Node.js 24 portátil;
+- usuário final não precisa instalar Node/npm;
+- instalador verifica WebView2;
+- instalador pode instalar Ollama e baixar os três modelos Qwen;
+- gerador automático Sonota-Setup.exe com Inno Setup.
+
+PARA GERAR NO WINDOWS
+1. Garanta Node.js 24, Rust/Cargo, C++ Build Tools, WebView2 e Inno Setup 6 na máquina de desenvolvimento.
+2. Execute: installer\windows\Criar-Sonota-Desktop.bat
+3. O instalador final será criado em: installer\windows\output\Sonota-Setup.exe
+
+PARA TESTAR SEM GERAR O INSTALADOR
+powershell -ExecutionPolicy Bypass -File installer\windows\build-release.ps1 -SkipInstaller
+Depois abra: installer\windows\staging\Sonota.exe
+
+IMPORTANTE
+O ambiente usado pelo ChatGPT não possui Rust nem Windows, então o .exe final não pôde ser compilado aqui. A estrutura, scripts de staging e fonte Tauri foram preparados; a compilação final deve ser feita no seu Windows.

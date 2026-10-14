@@ -1,0 +1,54 @@
+<div class="page-title">
+  <div><h1>Biblioteca</h1><p>Encontre seus arranjos com linguagem natural ou navegue pelo acervo.</p></div>
+  <div class="page-actions"><button class="primary-btn" type="button" (click)="openEditor()">+ Cadastrar novo arranjo</button></div>
+</div>
+
+@if(error){<div class="error-box"><strong>Verifique os dados:</strong>@for(line of errorLines(); track line){<span>{{line}}</span>}</div>}
+
+<section class="library-smart-search-wrap" aria-label="Busca inteligente da Biblioteca">
+  <form class="library-smart-search" (ngSubmit)="runSmartSearch()">
+    <span class="library-smart-search-icon"><app-icon name="search" [size]="18"/></span>
+    <input class="library-smart-search-input" [(ngModel)]="smartQuery" name="library-smart-query" placeholder="Descreva o arranjo que você procura..." autocomplete="off">
+    @if(smartResult){<button class="library-search-clear" type="button" (click)="clearSmartSearch()" aria-label="Limpar busca">×</button>}
+    <button class="ghost-btn library-filter-toggle" type="button" [class.active]="filtersOpen" (click)="filtersOpen=!filtersOpen"><app-icon name="details" [size]="15"/>Filtros</button>
+    <button class="primary-btn library-smart-search-button" type="submit" [disabled]="searching||!smartQuery.trim()"><app-icon name="search" [size]="15"/>{{searching?'Buscando…':'Buscar'}}</button>
+  </form>
+  <div class="library-search-hint">Ex.: “arranjo épico em ré menor, por volta de 120 BPM, com cordas e metais”</div>
+
+  @if(filtersOpen){
+    <div class="library-compact-filters">
+      <input class="sonota-control" type="number" [(ngModel)]="filters.min" placeholder="BPM mín.">
+      <input class="sonota-control" type="number" [(ngModel)]="filters.max" placeholder="BPM máx.">
+      <select class="sonota-control" [(ngModel)]="filters.genre"><option value="">Todos os gêneros</option>@for(x of genres; track x){<option>{{x}}</option>}</select>
+      <select class="sonota-control" [(ngModel)]="filters.instrument"><option value="">Todos os instrumentos</option>@for(x of instruments; track x){<option>{{x}}</option>}</select>
+      <select class="sonota-control" [(ngModel)]="filters.key"><option value="">Todas as tonalidades</option>@for(x of keys; track x){<option>{{x}}</option>}</select>
+      <input class="sonota-control" [(ngModel)]="filters.tag" placeholder="Tag">
+      <button class="ghost-btn" type="button" (click)="clearFilters()">Limpar filtros</button>
+    </div>
+  }
+</section>
+
+<div class="library-results-head">
+  <div>
+    <strong>{{smartResult?'Resultados da busca':'Seu acervo'}}</strong>
+    <span>{{rows.length}} arquivo(s){{smartResult?' compatível(is) com o pedido':''}}</span>
+  </div>
+  @if(smartResult?.notice){<small>{{smartResult.notice}}</small>}
+</div>
+
+<div class="audio-grid library-audio-grid">
+@for(a of rows; track a.id){
+  <article class="audio-card library-audio-card">
+    <div class="audio-card-top"><div><h4>{{a.title}}</h4><p>{{a.fileName||'Arquivo musical'}} • {{a.genre||'Sem gênero'}}</p></div><div class="library-card-badges">@if(scoreFor(a)!==null){<span class="badge smart-score">{{scoreLabelFor(a)}}</span>}<span class="badge accent">{{(a.fileType||'áudio').toUpperCase()}}</span></div></div>
+    <audio class="library-player" controls preload="none" [src]="api.fileUrl(a.fileId)"></audio>
+    <div class="audio-meta-grid"><div class="audio-meta-box"><small>BPM</small><strong>{{a.bpm||'—'}}</strong></div><div class="audio-meta-box"><small>Tonalidade</small><strong>{{a.key||'—'}}</strong></div><div class="audio-meta-box"><small>Gênero</small><strong>{{a.genre||'—'}}</strong></div></div>
+    <div class="tag-row">@for(x of (a.instruments||[]).slice(0,4); track x){<span class="tag">{{x}}</span>}@for(x of (a.tags||[]).slice(0,4); track x){<span class="tag">#{{x}}</span>}</div>
+    <div class="library-card-actions"><a class="ghost-btn icon-action" [href]="api.fileUrl(a.fileId,true)"><app-icon name="download" [size]="16"/>Baixar</a><button class="ghost-btn icon-action" type="button" (click)="openEditor(a)"><app-icon name="edit" [size]="16"/>Editar</button><button class="ghost-btn icon-action" type="button" (click)="showLocation(a)"><app-icon name="folder" [size]="16"/>Localização</button><button class="ghost-btn icon-action danger-action" type="button" (click)="confirmDelete=a"><app-icon name="trash" [size]="16"/>Excluir</button></div>
+  </article>
+}@empty{<div class="empty"><strong>{{smartResult?'Nenhum arranjo parecido foi encontrado':'Nenhum arquivo no acervo'}}</strong><span>{{smartResult?'Tente descrever o pedido de outra forma ou ajuste os filtros.':'Cadastre um novo arranjo para começar.'}}</span></div>}
+</div>
+
+<app-modal [open]="editorOpen" [title]="editing?'Editar arranjo':'Cadastrar novo arranjo'" [wide]="true" (close)="closeEditor()">
+<form class="form-grid" (ngSubmit)="saveArrangement()">@if(error){<div class="error-box"><strong>Verifique os dados:</strong>@for(line of errorLines(); track line){<span>{{line}}</span>}</div>}<label class="field"><span>Nome <b class="required-mark">*</b></span><input class="sonota-control" [(ngModel)]="form.title" name="arr-title" required></label><label class="field"><span>Arquivo</span><input #arrangementFileInput class="sonota-file" type="file" accept="audio/mpeg,audio/wav,audio/ogg,audio/flac,.mp3,.wav,.ogg,.flac" (change)="fileSelected($event)"><small>{{editing?'Opcional: escolha outro arquivo apenas para substituir o áudio.':'MP3, WAV, OGG ou FLAC'}}</small></label><label class="field"><span>BPM <b class="required-mark">*</b></span><input class="sonota-control" type="number" min="20" max="300" [(ngModel)]="form.bpm" name="arr-bpm" required></label><label class="field"><span>Tonalidade</span><select class="sonota-control" [(ngModel)]="form.key" name="arr-key"><option value="">Selecione</option>@for(x of keyOptions; track x){<option>{{x}}</option>}</select></label><label class="field"><span>Gênero</span><select class="sonota-control" [(ngModel)]="form.genre" name="arr-genre"><option value="">Selecione</option>@for(x of genreOptions; track x){<option>{{x}}</option>}</select></label><label class="field"><span>Instrumentos</span><input class="sonota-control" [(ngModel)]="form.instruments" name="arr-instruments"><div class="input-suggestions">@for(x of instrumentOptions; track x){<button type="button" (click)="addOption('instruments',x)">{{x}}</button>}</div></label><label class="field"><span>Tags</span><input class="sonota-control" [(ngModel)]="form.tags" name="arr-tags"><div class="input-suggestions">@for(x of tagOptions; track x){<button type="button" (click)="addOption('tags',x)">{{x}}</button>}</div></label><label class="field"><span>Observações</span><textarea class="sonota-control sonota-textarea" rows="4" [(ngModel)]="form.notes" name="arr-notes"></textarea></label><button class="primary-btn" type="submit" [disabled]="saving">{{saving?'Salvando…':'Salvar arranjo'}}</button></form>
+</app-modal>
+<app-modal [open]="!!confirmDelete" title="Excluir arranjo" [showFooter]="true" (close)="confirmDelete=null"><p>Deseja excluir “{{confirmDelete?.title}}”? O arquivo também será removido quando não estiver mais em uso.</p><div modal-footer><button class="ghost-btn" type="button" (click)="confirmDelete=null">Cancelar</button><button class="danger-btn" type="button" (click)="removeArrangement()">Excluir</button></div></app-modal>

@@ -1,0 +1,27 @@
+SONOTA V2.7 - MIGRACAO IONIC ANGULAR - FASE 1
+
+O frontend mobile/ foi migrado de Ionic React para Ionic Angular.
+A aparencia continua baseada no HTML + CSS responsivo do Sonota atual.
+O backend Node/Express + SQLite + Ollama foi mantido.
+
+TESTE NO WINDOWS
+1. Abra PowerShell na pasta do projeto.
+2. Execute: cd mobile
+3. Execute: npm install
+4. Execute: npm run build
+5. Volte: cd ..
+6. Execute: npm test
+7. Execute: .\Iniciar-Sonota.bat
+
+INSTALADOR WINDOWS - FASE 1
+Pasta: installer\windows
+- Sonota.iss: projeto do Inno Setup.
+- install-prereqs.ps1: instala/verifica Node.js + npm + Ollama, compila Angular e baixa os modelos.
+- Criar-Instalador.bat: gera Sonota-Setup.exe quando o Inno Setup 6 estiver instalado.
+
+IMPORTANTE
+O build Angular final nao foi executado neste ambiente porque os pacotes Angular nao puderam ser baixados daqui.
+O backend foi validado e os 24 testes automatizados passaram.
+
+CELULAR
+O frontend esta preparado para Capacitor. O backend Node/SQLite/Ollama nao sera executado dentro do Android/iOS da mesma forma que no Windows; a versao mobile precisara se conectar ao backend Sonota rodando em um PC/servidor ou a um backend hospedado.

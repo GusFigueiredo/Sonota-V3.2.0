@@ -1,0 +1,5 @@
+# Ambiente desktop do Sonota: Python 3.10 x64
+# NumPy < 2 mantém compatibilidade consistente com Basic Pitch/Demucs 4.
+numpy==1.26.4
+librosa==0.11.0
+soundfile==0.13.1

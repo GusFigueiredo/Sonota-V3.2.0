@@ -1,0 +1,20 @@
+[package]
+name = "sonota-desktop"
+version = "3.2.0"
+description = "Sonota V3.2.0 Desktop - Ionic Angular + Tauri"
+authors = ["Harmônico"]
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+url = "2"
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true

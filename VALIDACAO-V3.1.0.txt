@@ -1,0 +1,16 @@
+SONOTA V3.1.0 - VALIDACAO DE RELEASE
+
+Verificacoes executadas neste pacote:
+- metadados de versao conferidos em backend, mobile, Tauri e Inno Setup;
+- sintaxe JavaScript conferida em src/, scripts/ e tests/;
+- JSONs do projeto validados;
+- smoke test local do novo indice persistente FTS5/Busca executado com sucesso;
+- install-ai.ps1 exige somente qwen3:1.7b e qwen3-embedding:0.6b;
+- AGENT_MODEL e AI_FAST_MODEL apontam para qwen3:1.7b;
+- caches Python removidos do fonte e do processo de staging;
+- build-release.ps1 limpa arquivos de desenvolvimento do node_modules de producao.
+
+O Sonota-Setup.exe nao e compilado neste ambiente. Para gerar e validar o instalador final,
+use Windows x64 com Node 24, Rust/Cargo e Inno Setup 6 e execute:
+
+  .\installer\windows\Criar-Sonota-Desktop.bat

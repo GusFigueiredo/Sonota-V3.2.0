@@ -1,0 +1,58 @@
+# =========================
+# SONOTA - GITIGNORE
+# =========================
+
+# Node
+node_modules/
+**/node_modules/
+
+# Dados locais do Sonota
+data/
+backups/
+
+# Variáveis de ambiente
+.env
+.env.*
+!.env.example
+
+# Python
+.venv*/
+venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+
+# Angular / Ionic
+mobile/www/
+mobile/.angular/
+mobile/out-tsc/
+public/ionic/
+
+# Tauri / Rust
+target/
+**/target/
+
+# Build temporário do instalador
+.build-cache/
+.build-temp/
+**/.build-cache/
+**/.build-temp/
+
+# Arquivos gerados pelo instalador
+installer/windows/output/
+installer/windows/Output/
+
+# Modelos de IA
+*.gguf
+
+# Logs
+*.log
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

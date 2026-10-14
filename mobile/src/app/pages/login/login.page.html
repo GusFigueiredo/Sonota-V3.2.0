@@ -1,0 +1,22 @@
+<div class="login-shell">
+  <div class="login-card">
+    <div class="login-intro">
+      <div class="login-logo"><img class="login-logo-image" src="assets/sonota-logo-name.png" alt="Sonota"></div>
+      <span class="eyebrow">Gestão musical inteligente</span>
+      <h1>{{ mode === 'login' ? 'Bem-vindo de volta' : 'Crie seu ambiente Sonota' }}</h1>
+      <p>{{ mode === 'login' ? 'Acesse clientes, projetos, arquivos e financeiro em um só lugar.' : 'Cada conta mantém clientes, projetos, arranjos e informações financeiras separados.' }}</p>
+    </div>
+    @if (error) { <div class="error-box"><strong>Verifique os dados:</strong>@for (line of errorLines(); track line) { <span>{{line}}</span> }</div> }
+    <form class="form-grid one" (ngSubmit)="submit()">
+      @if (mode === 'register') {
+        <label class="field"><span>Nome</span><input class="sonota-control" name="name" [(ngModel)]="form.name" required></label>
+        <label class="field"><span>Empresa / estúdio</span><input class="sonota-control" name="studio" [(ngModel)]="form.studio"></label>
+        <label class="field"><span>Cargo</span><input class="sonota-control" name="role" [(ngModel)]="form.role"></label>
+      }
+      <label class="field"><span>E-mail</span><input class="sonota-control" type="email" name="email" [(ngModel)]="form.email" required></label>
+      <label class="field"><span>Senha</span><input class="sonota-control" type="password" name="password" [(ngModel)]="form.password" [attr.minlength]="mode === 'register' ? 6 : 1" required>@if(mode==='register'){<small>Mínimo de 6 caracteres e pelo menos 1 número.</small>}</label>
+      <button class="primary-btn" type="submit" [disabled]="busy">{{ busy ? 'Aguarde…' : (mode === 'login' ? 'Entrar' : 'Criar conta') }}</button>
+    </form>
+    <button class="text-link" type="button" (click)="switchMode()">{{ mode === 'login' ? 'Ainda não tenho conta' : 'Já tenho uma conta' }}</button>
+  </div>
+</div>

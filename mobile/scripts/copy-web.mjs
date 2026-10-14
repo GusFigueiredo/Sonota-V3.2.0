@@ -1,0 +1,12 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+const here=path.dirname(fileURLToPath(import.meta.url));
+const mobile=path.resolve(here,'..');
+const source=path.join(mobile,'www');
+const target=path.resolve(mobile,'../public/ionic');
+if(!fs.existsSync(path.join(source,'index.html')))throw new Error('Build Angular não encontrado em mobile/www.');
+fs.rmSync(target,{recursive:true,force:true});
+fs.mkdirSync(path.dirname(target),{recursive:true});
+fs.cpSync(source,target,{recursive:true});
+console.log(`[sonota-ui] Interface Angular copiada para ${target}`);

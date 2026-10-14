@@ -1,0 +1,13 @@
+SONOTA V3.2.0 - CHECKLIST DE VALIDAÇÃO
+
+[ ] Novo arranjo abre com todos os campos e arquivo vazios
+[ ] Busca por nome exato retorna somente o arranjo solicitado
+[ ] Busca “pelo menos 100 BPM” não retorna BPM abaixo de 100
+[ ] Localizar arquivo abre Explorer no arquivo correto
+[ ] Visualizar nota abre PDF/imagem no Windows
+[ ] Baixar nota mostra caminho salvo em Downloads\Sonota
+[ ] Reparar Laboratório exibe alerta de sucesso
+[ ] Job do Laboratório mostra progresso e tempo restante
+[ ] “qual projeto usa o arranjo X” retorna projetos, não arranjos
+[ ] Instalador mostra etapa do software e etapa de configuração
+[ ] ZIP corrompido em .build-cache é detectado e baixado novamente

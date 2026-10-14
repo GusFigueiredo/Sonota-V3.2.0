@@ -1,0 +1,31 @@
+<div class="page-title"><div><h1>Projetos</h1><p>Cliente + produção + arquivos + arranjos + financeiro no mesmo fluxo.</p></div><div class="page-actions"><button class="primary-btn" type="button" (click)="open()">+ Cadastrar novo projeto</button></div></div>
+<div class="toolbar-search"><input class="sonota-control toolbar-search-input" [(ngModel)]="q" placeholder="Pesquisar projetos…"></div>
+@if(error){<div class="error-box"><strong>Verifique os dados:</strong>@for(line of errorLines(); track line){<span>{{line}}</span>}</div>}
+<section><div class="section-head"><div><h2>Projetos cadastrados</h2><p>Cards objetivos com as informações principais.</p></div></div><div class="card-grid project-list">
+@for(p of rows; track p.id){<article class="card entity-card clickable" (click)="openProject.emit(p.id)"><div class="card-pad"><h3>{{p.name}}</h3><p>{{p.description||p.proposal||'Sem descrição'}}</p><div class="project-meta"><span><small>Cliente</small>{{clients[p.clientId]?.name||'—'}}</span><span><small>Prazo</small>{{dateBR(p.dueDate)}}</span><span><small>Valor</small>{{money(p.value)}}</span></div><div class="card-actions entity-card-actions" (click)="$event.stopPropagation()"><button class="ghost-btn icon-action" type="button" (click)="open(p)"><app-icon name="edit" [size]="16"/>Editar</button><button class="ghost-btn icon-action" type="button" (click)="openProject.emit(p.id)"><app-icon name="details" [size]="16"/>Detalhes</button><button class="ghost-btn icon-action danger-action" type="button" (click)="confirm=p"><app-icon name="trash" [size]="16"/>Excluir</button></div></div></article>}@empty{<div class="empty"><strong>Nenhum projeto</strong><span>Crie o primeiro projeto e associe um cliente.</span></div>}
+</div></section>
+<section><div class="section-head"><div><h2>Visão por etapas</h2><p>Arraste no computador; no celular, abra o projeto ou use Editar.</p></div></div><div class="kanban">
+@for(stage of stages; track stage){<div class="kanban-col" [attr.data-kanban-stage]="stage" [class.drag-over]="dragOverStage===stage"><div class="kanban-head"><span class="status status-{{statusClass(stage)}}">{{stage}}</span><b>{{count(stage)}}</b></div>@for(p of byStage(stage); track p.id){<article class="kanban-card" [class.dragging]="draggingId===p.id" tabindex="0" role="button" (pointerdown)="pointerDown($event,p.id)" (click)="openFromKanban(p.id)" (keydown.enter)="openFromKanban(p.id)"><strong>{{p.name}}</strong><span>{{p.description||'Sem descrição'}}</span><small>{{clients[p.clientId]?.name||'—'}} • {{dateBR(p.dueDate)}}</small><b>{{money(p.value)}}</b></article>}</div>}
+</div></section>
+
+<app-modal [open]="creating || !!editing" [title]="editing?'Editar projeto':'Novo projeto'" [wide]="true" (close)="closeEditor()">
+<form class="form-grid" (ngSubmit)="save()">
+@if(error){<div class="error-box"><strong>Verifique os dados:</strong>@for(line of errorLines(); track line){<span>{{line}}</span>}</div>}
+<label class="field"><span>Nome <b class="required-mark">*</b></span><input class="sonota-control" [(ngModel)]="form.name" name="project-name" required></label>
+<label class="field"><span>Cliente <b class="required-mark">*</b></span><select class="sonota-control" [(ngModel)]="form.clientId" name="project-client" required><option value="">Selecione</option>@for(c of data.clients; track c.id){<option [value]="c.id">{{c.name}}</option>}</select></label>
+<label class="field"><span>Descrição</span><textarea class="sonota-control sonota-textarea" rows="3" [(ngModel)]="form.description" name="project-description"></textarea></label>
+<label class="field"><span>Arranjo</span><select class="sonota-control" [(ngModel)]="form.arrangementId" name="project-arrangement"><option value="">Sem arranjo</option>@for(a of data.arrangements; track a.id){<option [value]="a.id">{{a.title}}</option>}</select></label>
+<label class="field"><span>Prazo</span><input class="sonota-control" type="date" [(ngModel)]="form.dueDate" name="project-due"></label>
+<label class="field"><span>Valor (R$)</span><input class="sonota-control" type="text" inputmode="decimal" [(ngModel)]="form.value" name="project-value" placeholder="0,00"><small>Aceita 5000, 5.000 ou 5.000,00</small></label>
+<label class="field"><span>Etapa</span><select class="sonota-control" [(ngModel)]="form.status" name="project-status">@for(x of stages; track x){<option>{{x}}</option>}</select></label>
+<label class="field"><span>Estilo musical</span><select class="sonota-control" [(ngModel)]="form.musicalStyle" name="project-style"><option value="">Selecione</option>@for(x of styleOptions; track x){<option>{{x}}</option>}</select></label>
+<label class="field"><span>Instrumentos</span><input class="sonota-control" [(ngModel)]="form.instruments" name="project-instruments"><div class="input-suggestions compact">@for(x of instrumentOptions.slice(0,8); track x){<button type="button" (click)="addInstrument(x)">{{x}}</button>}</div></label>
+<label class="field"><span>Objetivo</span><textarea class="sonota-control sonota-textarea" rows="3" [(ngModel)]="form.objective" name="project-objective"></textarea></label>
+<label class="field"><span>Referências</span><textarea class="sonota-control sonota-textarea" rows="3" [(ngModel)]="form.references" name="project-references"></textarea></label>
+<label class="field"><span>Proposta / briefing</span><textarea class="sonota-control sonota-textarea" rows="4" [(ngModel)]="form.proposal" name="project-proposal"></textarea></label>
+<button class="primary-btn" type="submit">Salvar projeto</button>
+</form>
+</app-modal>
+
+<app-modal [open]="!!confirm" title="Excluir projeto" [showFooter]="true" (close)="confirm=null"><p>Tem certeza de que deseja excluir este projeto? Versões, documentos e histórico relacionado também poderão ser removidos.</p><div modal-footer><button class="ghost-btn" type="button" (click)="confirm=null">Cancelar</button><button class="danger-btn" type="button" (click)="remove()">Excluir</button></div></app-modal>
+<app-modal [open]="!!move" title="Alterar etapa" [showFooter]="true" (close)="move=null"><p>Deseja alterar “{{move?.project?.name}}” para “{{move?.status}}”?</p><div modal-footer><button class="ghost-btn" type="button" (click)="move=null">Cancelar</button><button class="primary-btn" type="button" (click)="applyMove()">Confirmar</button></div></app-modal>

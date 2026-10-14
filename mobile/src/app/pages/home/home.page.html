@@ -1,0 +1,48 @@
+<section class="hero dashboard-hero" aria-label="Boas-vindas">
+  <div class="dashboard-hero-copy">
+    <span class="eyebrow">Harmônico • Sonota</span>
+    <h1>Bem-vindo de volta, <span class="home-welcome-name">{{firstName}}</span>!</h1>
+    <p>Centralize clientes, arranjos, projetos e finanças em um único fluxo. Use a busca inteligente para encontrar o áudio certo sem perder tempo vasculhando pastas.</p>
+  </div>
+  <div class="wave dashboard-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</section>
+
+<div class="home-start-grid">
+  <section class="home-start-section">
+    <div class="section-head home-section-head">
+      <div><span class="home-kicker">Continue de onde parou</span><h2>Projetos recentes</h2></div>
+      <button class="text-action" type="button" (click)="navigate.emit('projetos')">Ver todos</button>
+    </div>
+    <div class="home-project-grid">
+      @for(p of recentProjects; track p.id){
+        <button type="button" class="home-project-card" (click)="openProject.emit(p.id)">
+          <div class="home-project-visual">
+            <span class="home-project-icon"><app-icon name="projects" [size]="22"/></span>
+            <span class="status status-{{statusClass(p.status)}}">{{p.status}}</span>
+          </div>
+          <div class="home-project-copy">
+            <strong>{{p.name}}</strong>
+            <span>{{clientName(p)}}</span>
+            @if(arrangementName(p)){<small>{{arrangementName(p)}}</small>}
+          </div>
+          <div class="home-project-foot"><span>{{updatedLabel(p)}}</span><b>Abrir ›</b></div>
+        </button>
+      } @empty {
+        <div class="empty home-project-empty"><strong>Nenhum projeto ainda</strong><span>Seus projetos mais recentes aparecerão aqui.</span></div>
+      }
+    </div>
+  </section>
+
+  <section class="home-start-section home-tools-section">
+    <div class="section-head home-section-head"><div><span class="home-kicker">Ferramentas</span><h2>Acesso rápido</h2></div></div>
+    <div class="home-tools-grid">
+      @for(tool of tools; track tool.page){
+        <button type="button" class="home-tool-card" (click)="navigate.emit(tool.page)">
+          <span class="home-tool-icon"><app-icon [name]="tool.icon" [size]="19"/></span>
+          <div><strong>{{tool.title}}</strong><span>{{tool.text}}</span></div>
+          <b>›</b>
+        </button>
+      }
+    </div>
+  </section>
+</div>

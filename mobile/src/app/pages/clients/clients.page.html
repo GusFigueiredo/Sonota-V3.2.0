@@ -1,0 +1,34 @@
+<div class="page-title"><div><h1>Clientes</h1><p>Informações operacionais sem transformar o Sonota em um CRM de prospecção.</p></div><div class="page-actions"><button class="primary-btn" type="button" (click)="open()">+ Cadastrar novo cliente</button></div></div>
+<div class="toolbar-search"><input class="sonota-control toolbar-search-input" [(ngModel)]="q" placeholder="Pesquisar nome, empresa, e-mail…"></div>
+@if(error){<div class="error-box"><strong>Verifique os dados:</strong>@for(line of errorLines(); track line){<span>{{line}}</span>}</div>}
+<div class="card-grid">
+ @for(c of rows; track c.id){
+  <article class="card entity-card clickable" (click)="showDetail(c)"><div class="card-pad"><div class="entity-top"><div class="avatar">{{c.name.slice(0,2).toUpperCase()}}</div><span class="status status-{{statusClass(c.status)}}">{{c.status}}</span></div><h3>{{c.name}}</h3><p>{{c.company||c.type}}</p><div class="entity-lines"><span>{{c.email||'Sem e-mail'}}</span><span>WhatsApp: {{c.whatsapp||c.phone||'não cadastrado'}}</span></div><div class="card-actions entity-card-actions" (click)="$event.stopPropagation()"><button class="ghost-btn icon-action" type="button" (click)="open(c)"><app-icon name="edit" [size]="16"/>Editar</button><button class="ghost-btn icon-action danger-action" type="button" (click)="confirm=c"><app-icon name="trash" [size]="16"/>Excluir</button></div></div></article>
+ } @empty {<div class="empty"><strong>Nenhum cliente encontrado</strong><span>Cadastre o primeiro cliente da conta.</span></div>}
+</div>
+
+<app-modal [open]="creating || !!editing" [title]="editing?'Editar cliente':'Novo cliente'" (close)="closeEditor()">
+ <form class="form-grid" (ngSubmit)="save()">
+  @if(error){<div class="error-box"><strong>Verifique os dados:</strong>@for(line of errorLines(); track line){<span>{{line}}</span>}</div>}
+  <label class="field"><span>Nome <b class="required-mark">*</b></span><input class="sonota-control" [(ngModel)]="form.name" name="client-name" required></label>
+  <label class="field"><span>Tipo</span><select class="sonota-control" [(ngModel)]="form.type" name="client-type"><option>Pessoa</option><option>Empresa</option></select></label>
+  <label class="field"><span>Empresa</span><input class="sonota-control" [(ngModel)]="form.company" name="client-company"></label>
+  <label class="field"><span>CPF / CNPJ</span><input class="sonota-control" [(ngModel)]="form.document" name="client-document"></label>
+  <label class="field"><span>E-mail</span><input class="sonota-control" type="email" [(ngModel)]="form.email" name="client-email"></label>
+  <label class="field"><span>Telefone</span><input class="sonota-control" [(ngModel)]="form.phone" name="client-phone"></label>
+  <label class="field"><span>WhatsApp</span><input class="sonota-control" [(ngModel)]="form.whatsapp" name="client-whatsapp"></label>
+  <label class="field"><span>Cidade</span><input class="sonota-control" [(ngModel)]="form.city" name="client-city"></label>
+  <label class="field"><span>Status</span><select class="sonota-control" [(ngModel)]="form.status" name="client-status"><option>Ativo</option><option>Prospect</option><option>Pausado</option><option>Inativo</option></select></label>
+  <label class="field"><span>Observações</span><textarea class="sonota-control sonota-textarea" rows="4" [(ngModel)]="form.notes" name="client-notes"></textarea></label>
+  <button class="primary-btn" type="submit">Salvar cliente</button>
+ </form>
+</app-modal>
+
+<app-modal [open]="!!detail" [title]="detail?.client?.name||'Cliente'" (close)="detail=null">
+ @if(detail){<div class="detail-metrics"><div><span>Projetos</span><b>{{detail.summary.projects}}</b></div><div><span>Ativos</span><b>{{detail.summary.activeProjects}}</b></div><div><span>Contratado</span><b>{{money(detail.summary.totalContracted)}}</b></div><div><span>Recebido</span><b>{{money(detail.summary.received)}}</b></div><div><span>Pendente</span><b>{{money(detail.summary.pending)}}</b></div><div><span>Arranjos</span><b>{{detail.summary.arrangements}}</b></div></div><div class="detail-section"><h3>Contato</h3><p>{{detail.client.email||'Sem e-mail'}}<br>{{detail.client.whatsapp||detail.client.phone||'Sem WhatsApp'}}</p></div><div class="detail-section"><h3>Projetos relacionados</h3>@for(p of detail.projects; track p.id){<div class="mini-row"><div><b>{{p.name}}</b><span>{{p.description||p.proposal||'Sem descrição'}}</span></div><span class="status status-{{statusClass(p.status)}}">{{p.status}}</span></div>}@empty{<div class="empty"><strong>Sem projetos</strong><span>Este cliente ainda não possui projetos.</span></div>}</div>}
+</app-modal>
+
+<app-modal [open]="!!confirm" title="Excluir cliente" [showFooter]="true" (close)="confirm=null">
+ <p>Tem certeza de que deseja excluir {{confirm?.name||'este cliente'}}? Projetos vinculados impedem a exclusão.</p>
+ <div modal-footer><button class="ghost-btn" type="button" (click)="confirm=null">Cancelar</button><button class="danger-btn" type="button" (click)="remove()">Excluir</button></div>
+</app-modal>
