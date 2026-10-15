@@ -1,3 +1,4 @@
+import { siteAuth } from '../../site/firebase-auth';
 import { Injectable } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
@@ -42,9 +43,10 @@ export class ApiService {
   }
 
   me() { return this.request('/auth/me'); }
-  login(data: any) { return this.request('/auth/login', { method: 'POST', body: data }); }
-  register(data: any) { return this.request('/auth/register', { method: 'POST', body: data }); }
-  logout() { return this.request('/auth/logout', { method: 'POST' }); }
+  login(data: any) { return siteAuth.login(data, (path, options) => this.request(path, options)); }
+  register(data: any) { return siteAuth.register(data, (path, options) => this.request(path, options)); }
+  async logout() { await siteAuth.logout((path, options) => this.request(path, options)); this.csrf = ''; }
+  resetPassword(email: string) { return siteAuth.reset(email); }
   bootstrap() { return this.request('/bootstrap'); }
   dashboard() { return this.request('/dashboard'); }
   create(type: string, data: any) { return this.request(`/${type}`, { method: 'POST', body: data }); }
@@ -77,7 +79,7 @@ export class ApiService {
   updateProfile(data: any) { return this.request('/profile', { method: 'PATCH', body: data }); }
   uploadAvatar(file: File) { return this.request('/profile/avatar', { method: 'POST', body: this.multipart({}, file) }); }
   removeAvatar() { return this.request('/profile/avatar', { method: 'DELETE' }); }
-  changePassword(data: any) { return this.request('/auth/password', { method: 'POST', body: data }); }
+  changePassword(data: any) { return siteAuth.changePassword(data, (path, options) => this.request(path, options)); }
   revealFile(id: string) { return this.request(`/files/${id}/reveal`, { method: 'POST' }); }
   openFile(id: string) { return this.request(`/files/${id}/open`, { method: 'POST' }); }
   downloadFileLocal(id: string) { return this.request(`/files/${id}/download-local`, { method: 'POST' }); }

@@ -1,3 +1,4 @@
+import { readAccountProfile } from '../firebase-account-profile.js';
 import { clientSchema,projectSchema,updateSchema,arrangementSchema } from '../validation.js';
 import { listClients,listArrangements,listProjects,listDocs,listJobs,financeSummary,profile } from '../db.js';
 import { definitions,entity } from '../entities.js';
@@ -190,7 +191,7 @@ export function createToolRuntime({db,config,userId}){
         case 'listar_processamentos_audio':{
           let rows=listJobs(db,userId);if(args.arranjo){const a=resolveArrangement(args.arranjo);if(!a.ok)return fail(a);rows=rows.filter(j=>j.arrangementId===a.item.id)}return result(true,{items:publicList(rows,50)});
         }
-        case 'obter_perfil':return result(true,{profile:profile(db.prepare('SELECT * FROM users WHERE id=?').get(userId))});
+        case 'obter_perfil':return result(true,{profile:await readAccountProfile(db,config,userId)});
         case 'abrir_pagina':navigate=args.pagina;return result(true,{navigate,message:`A interface pode abrir ${args.pagina}.`});
 
         // # CREATE TOOLS ----------------------------------------------------
@@ -248,7 +249,7 @@ export function createToolRuntime({db,config,userId}){
           queue({kind:'mark-version-sent',projectId:p.item.id,versionId:v.item.id},[{field:`Versão V${v.item.number}`,from:'Não enviada',to:'Enviada ao cliente'}]);return result(true,{proposed:true});
         }
         case 'propor_editar_perfil':{
-          const row=db.prepare('SELECT * FROM users WHERE id=?').get(userId),current=profile(row);const patch=pickDefined(args,{nome:'name',empresa:'studio',cargo:'role',telefone:'phone'});if(!Object.keys(patch).length)return result(false,{error:'NO_CHANGES',message:'Informe ao menos um dado do perfil.'});
+          const current=await readAccountProfile(db,config,userId);const patch=pickDefined(args,{nome:'name',empresa:'studio',cargo:'role',telefone:'phone'});if(!Object.keys(patch).length)return result(false,{error:'NO_CHANGES',message:'Informe ao menos um dado do perfil.'});
           queue({kind:'update-profile',patch,version:current.version},Object.entries(patch).map(([k,to])=>({field:`Perfil • ${fieldLabels[k]||({studio:'Empresa/estúdio',role:'Cargo'}[k])||k}`,from:display(current[k]),to:display(to)})));return result(true,{proposed:true});
         }
 

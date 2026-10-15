@@ -1,3 +1,4 @@
+import { applyCloudProfileProposal } from '../firebase-account-profile.js';
 import { id,now,audit,transaction,listDocs,listJobs } from '../db.js';
 import { assert } from '../errors.js';
 import { createEntity,updateEntity,owned,versionCheck,entity } from '../entities.js';
@@ -69,7 +70,18 @@ function updateProfile(db,userId,op){
 // # Confirma uma proposta inteira, inclusive operações dependentes
 // Ex.: op:0 cria um cliente e op:1 cria um projeto usando o ID gerado em op:0.
 // Tudo fica na mesma transação: ou todas as alterações de banco entram, ou nenhuma entra.
-export async function confirmAssistantProposal({db,userId,actionId,worker,files}){
+export async function confirmAssistantProposal({db,config={},userId,actionId,worker,files}){
+  if(config.firebaseOnly){
+    const action=db.prepare('SELECT * FROM assistant_actions WHERE id=? AND user_id=?').get(actionId,userId);
+    assert(action&&!action.consumed_at&&action.expires_at>Date.now(),409,'ACTION_EXPIRED','A proposta expirou ou já foi utilizada.');
+    const payload=JSON.parse(action.payload),operations=payload.operations||[];
+    if(operations.some(op=>op.kind==='update-profile')){
+      assert(operations.length===1,422,'PROFILE_SEPARATE_ACTION','Confirme alterações de perfil separadamente das alterações em projetos ou clientes.');
+      const record=await applyCloudProfileProposal(db,config,userId,actionId,operations[0]);
+      db.prepare('UPDATE assistant_actions SET consumed_at=? WHERE id=?').run(now(),actionId);
+      return {message:'Perfil salvo no Firebase.',records:[record]};
+    }
+  }
   let needCollect=false;
   const outputs=transaction(db,()=>{
     const action=db.prepare('SELECT * FROM assistant_actions WHERE id=? AND user_id=?').get(actionId,userId);

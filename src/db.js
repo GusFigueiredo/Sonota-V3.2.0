@@ -3,6 +3,7 @@ import { mkdirSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { ROOT } from './config.js';
+import { migrateOwners } from './owner-migration.js';
 export const now = () => new Date().toISOString();
 export const id = () => randomUUID();
 export function openDatabase(config) {
@@ -18,6 +19,7 @@ export function openDatabase(config) {
       });
     }
   }
+  migrateOwners(db);
   return db;
 }
 export function transaction(db, fn) {

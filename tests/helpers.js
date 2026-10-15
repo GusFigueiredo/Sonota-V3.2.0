@@ -4,7 +4,7 @@ import path from 'node:path';
 import { createApp } from '../src/app.js';
 export async function fixture(t,overrides={}) {
   const dataDir=await mkdtemp(path.join(tmpdir(),'sonota-test-'));
-  const runtime=createApp({dataDir,audioEnabled:false,ollamaUrl:'',...overrides});
+  const runtime=createApp({dataDir,firebaseOnly:false,audioEnabled:false,ollamaUrl:'',...overrides});
   const server=runtime.app.listen(0,'127.0.0.1');await new Promise(resolve=>server.once('listening',resolve));
   const base=`http://127.0.0.1:${server.address().port}`;
   t.after(async()=>{await new Promise(resolve=>server.close(resolve));await runtime.close();await rm(dataDir,{recursive:true,force:true});});

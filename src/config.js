@@ -9,10 +9,11 @@ const integer = (value, fallback, min, max) => {
 export function getConfig(overrides = {}) {
   const port = integer(process.env.PORT, 3000, 1, 65535);
   return {
+    firebaseOnly: true,
     port, host: process.env.HOST || '127.0.0.1',
     dataDir: path.resolve(ROOT, process.env.DATA_DIR || 'data'),
     publicDir: path.join(ROOT, 'public'),
-    origins: (process.env.APP_ORIGINS || `http://localhost:${port},http://127.0.0.1:${port}`).split(',').map(x => x.trim()).filter(Boolean),
+    origins: (process.env.APP_ORIGINS || `http://localhost:${port},http://127.0.0.1:${port},http://localhost:8100,http://127.0.0.1:8100,http://localhost:4200,http://127.0.0.1:4200`).split(',').map(x => x.trim()).filter(Boolean),
     secureCookie: process.env.COOKIE_SECURE === 'true',
     registration: process.env.ALLOW_REGISTRATION !== 'false',
     maxFileBytes: integer(process.env.MAX_UPLOAD_MB, 100, 1, 1024) * 1024 * 1024,

@@ -14,9 +14,11 @@
         <label class="field"><span>Cargo</span><input class="sonota-control" name="role" [(ngModel)]="form.role"></label>
       }
       <label class="field"><span>E-mail</span><input class="sonota-control" type="email" name="email" [(ngModel)]="form.email" required></label>
-      <label class="field"><span>Senha</span><input class="sonota-control" type="password" name="password" [(ngModel)]="form.password" [attr.minlength]="mode === 'register' ? 6 : 1" required>@if(mode==='register'){<small>Mínimo de 6 caracteres e pelo menos 1 número.</small>}</label>
+      <label class="field"><span>Senha</span><input class="sonota-control" type="password" name="password" [(ngModel)]="form.password" [attr.minlength]="mode === 'register' ? 10 : 1" required>@if(mode==='register'){<small>Mínimo de 10 caracteres e pelo menos 1 número.</small>}</label>
       <button class="primary-btn" type="submit" [disabled]="busy">{{ busy ? 'Aguarde…' : (mode === 'login' ? 'Entrar' : 'Criar conta') }}</button>
     </form>
+    @if(mode === 'login') { <button class="text-link" type="button" [disabled]="busy" (click)="resetPassword()">Esqueci minha senha</button> }
+    @if(resetNotice) { <div class="success-box" role="status">{{resetNotice}}</div> }
     <button class="text-link" type="button" (click)="switchMode()">{{ mode === 'login' ? 'Ainda não tenho conta' : 'Já tenho uma conta' }}</button>
   </div>
 </div>

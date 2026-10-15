@@ -220,7 +220,8 @@ export function storage(config,db) {
       AND NOT EXISTS(SELECT 1 FROM arrangement_versions WHERE file_id=f.id) AND NOT EXISTS(SELECT 1 FROM docs WHERE file_id=f.id)
       AND NOT EXISTS(SELECT 1 FROM project_versions WHERE file_id=f.id)
       AND NOT EXISTS(SELECT 1 FROM jobs WHERE source_file_id=f.id OR output_file_id=f.id)
-      AND NOT EXISTS(SELECT 1 FROM users WHERE avatar_file_id=f.id)`).all(userId);
+      AND NOT EXISTS(SELECT 1 FROM users WHERE avatar_file_id=f.id)
+      AND NOT EXISTS(SELECT 1 FROM file_pins WHERE file_id=f.id)`).all(userId);
     for(const f of orphans){db.prepare('DELETE FROM files WHERE id=?').run(f.id);await rm(path.join(dir,f.storage_name),{force:true}).catch(()=>{});}
   }
 

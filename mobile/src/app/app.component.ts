@@ -80,7 +80,7 @@ export class AppComponent implements OnInit, OnDestroy {
    this.syncJobPolling(boot);
   }catch{}finally{this.refreshingJobs=false;}
  }
- async logout(){try{await this.api.logout()}finally{this.auth='guest';this.data=null;this.projectId=null}}
+ async logout(){try{await this.api.logout();this.auth='guest';this.data=null;this.projectId=null;this.syncJobPolling({transcriptions:[]})}catch(error:any){notifyError('Não foi possível sair',error.message)}}
  navigate(p:string){this.projectId=null;this.page=p;if(window.innerWidth<=820)this.menuOpen=false}
  openProject(id:string){this.projectId=id;this.page='projetos';if(window.innerWidth<=820)this.menuOpen=false}
  labelForPage(){return this.projectId?'Projeto':(this.nav.find(x=>x[0]===this.page)?.[1]||'Sonota')}

@@ -56,3 +56,9 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+# Credenciais administrativas Firebase (nunca versionar)
+**/*firebase-adminsdk*.json
+**/sonota-admin*.json
+
+# Credenciais locais usadas após o clone
+.secrets/

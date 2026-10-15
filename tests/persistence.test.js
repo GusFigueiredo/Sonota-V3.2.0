@@ -7,7 +7,7 @@ import { createApp } from '../src/app.js';
 import { account,call,seed } from './helpers.js';
 test('reinício mantém conta, sessão, registros e arquivos e impede dois servidores no mesmo banco',async()=>{
  const dataDir=await mkdtemp(path.join(tmpdir(),'sonota-restart-'));let runtime,server;
- async function start(){runtime=createApp({dataDir,audioEnabled:false,ollamaUrl:''});server=runtime.app.listen(0,'127.0.0.1');await new Promise(resolve=>server.once('listening',resolve));return `http://127.0.0.1:${server.address().port}`;}
+ async function start(){runtime=createApp({dataDir,firebaseOnly:false,audioEnabled:false,ollamaUrl:''});server=runtime.app.listen(0,'127.0.0.1');await new Promise(resolve=>server.once('listening',resolve));return `http://127.0.0.1:${server.address().port}`;}
  async function stop(){await new Promise(resolve=>server.close(resolve));await runtime.close();server=null;runtime=null;}
  try{
   let base=await start();const u=await account(base),data=await seed(base,u);assert.throws(()=>createApp({dataDir}),/Já existe/);

@@ -4,6 +4,46 @@ Esta edição usa **Ionic Angular** no frontend, com as páginas mantidas em **H
 
 A V3.2.0 mantém o instalador independente do Windows: Node 24, Python 3.10 e Ollama são usados em modo portátil dentro do Sonota, além de FFmpeg empacotado, modelos Qwen e validação real do Laboratório antes de concluir o Setup. Os alerts/toasts da V3.0.1 foram mantidos.
 
+## Primeiro uso após git clone
+
+Requer **Node.js 24 LTS**, npm (incluído no Node), Git e internet. Execute na raiz do repositório:
+
+```powershell
+npm.cmd run setup
+```
+
+No Linux/macOS, use `npm` no lugar de `npm.cmd`. O setup cria `.env` sem sobrescrever um existente, instala as dependências da raiz e do mobile com os lockfiles e compila a interface para `public/ionic/`. Não precisa instalar Ionic globalmente para rodar o aplicativo.
+
+### Configurar Firebase nesta máquina
+
+O login usa Firebase Authentication e os perfis usam Firestore. A configuração pública Web está em `mobile/src/app/firebase.ts` e deve ser versionada. A chave administrativa privada **não é esse firebaseConfig** e não deve ser commitada.
+
+1. Peça ao responsável pelo projeto uma credencial administrativa por um canal privado, ou gere uma no console Firebase em **Configurações do projeto → Contas de serviço → Gerar nova chave privada**, se tiver permissão.
+2. Crie a pasta `.secrets` na raiz e salve o JSON como `.secrets/firebase-admin.json`. Essa pasta está no `.gitignore`.
+3. Confira no `.env`: `GOOGLE_APPLICATION_CREDENTIALS=./.secrets/firebase-admin.json` e `FIREBASE_PROJECT_ID=bancodosonotaapp`. Pode usar outro caminho privado disponível na nova máquina.
+4. Ao usar outro projeto Firebase, atualize também o objeto público em `mobile/src/app/firebase.ts`, habilite Authentication por e-mail/senha e crie o Firestore. Confira `localhost` nos domínios autorizados do Authentication. Execute `npm.cmd run ui:build` após alterar a configuração Web.
+5. Execute `npm.cmd run doctor`. Ele verifica os arquivos e a correspondência de projeto sem imprimir segredos. A validação é local; teste o login para confirmar acesso remoto.
+
+Não basta copiar o caminho absoluto do computador anterior: o arquivo privado precisa existir nesta máquina. Sem uma credencial autorizada o servidor não consegue concluir o login Firebase.
+
+### Iniciar e testar
+
+```powershell
+npm.cmd start
+```
+
+Abra **http://localhost:3000/app/**. Teste cadastro, sair, entrar, editar perfil e atualizar a página. Confirme o usuário em Authentication e o perfil na coleção `usuarios` do Firestore.
+
+Para desenvolver com atualização automática, mantenha o backend aberto e, em outro terminal na raiz, execute `npm.cmd run ui:dev`. Abra **http://localhost:8100**. Se preferir `ionic serve`, instale o CLI com `npm.cmd install -g @ionic/cli`, entre na pasta `mobile` e execute `ionic serve`.
+
+A IA fica desabilitada no modelo inicial para dispensar Ollama no primeiro uso. Para habilitar, instale Ollama e os modelos indicados no `.env.example`, depois configure `AI_ENABLED=true`. O processamento de áudio exige os componentes descritos em `audio/README.md`.
+
+### O que enviar ao GitHub
+
+Inclua todos os arquivos de código, migrations, `.env.example`, `.gitignore`, `.nvmrc`, os dois `package.json` e os dois `package-lock.json`, além dos novos scripts e configuração pública Firebase. Confira `git status` antes do commit: arquivos novos precisam entrar no commit também.
+
+Não envie `.env`, `.secrets/`, credenciais privadas, `node_modules/`, `data/` ou backups. Esses arquivos são locais. O banco SQLite é criado/migrado automaticamente ao iniciar. Contas e perfis Firebase são compartilhados entre máquinas que usam o mesmo projeto; clientes, projetos e arquivos locais **não são transferidos pelo git clone**. Para levar esses dados, use backup e restauração separados.
+
 ## Rodar durante o desenvolvimento
 
 No Windows, o fluxo legado continua disponível por `Iniciar-Sonota.bat`. Para compilar apenas a interface Angular:

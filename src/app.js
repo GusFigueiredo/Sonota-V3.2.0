@@ -19,6 +19,7 @@ import { interpret } from './assistant.js';
 import { confirmAssistantProposal } from './ai/actions.js';
 import { ollamaStatus } from './ai/ollama.js';
 import { createWorker } from './jobs.js';
+import { cloudAccounts } from './cloud-accounts.js';
 import { addProjectEvent,listProjectEvents,listProjectVersions,studioFlow,operationalAlerts,upcomingDeliveries } from './workflow.js';
 
 function metadata(req) {
@@ -72,12 +73,13 @@ export function createApp(overrides={}) {
   let db;try{db=openDatabase(config);}catch(error){release();throw error;}
   const files=storage(config,db),worker=createWorker(db,config,files),app=express();
   app.disable('x-powered-by');
-  app.use(helmet({contentSecurityPolicy:{directives:{'default-src':["'self'"],'script-src':["'self'"],'script-src-attr':["'none'"],'style-src':["'self'","'unsafe-inline'"],'img-src':["'self'",'data:'],'media-src':["'self'",'blob:'],'connect-src':["'self'"],'upgrade-insecure-requests':config.secureCookie?[]:null}},strictTransportSecurity:config.secureCookie?undefined:false}));
+  app.use(helmet({contentSecurityPolicy:{directives:{'default-src':["'self'"],'script-src':["'self'"],'script-src-attr':["'none'"],'style-src':["'self'","'unsafe-inline'"],'img-src':["'self'",'data:'],'media-src':["'self'",'blob:'],'connect-src':["'self'",'https://identitytoolkit.googleapis.com','https://securetoken.googleapis.com'],'upgrade-insecure-requests':config.secureCookie?[]:null}},strictTransportSecurity:config.secureCookie?undefined:false}));
   app.use('/api',originGuard(config),(req,res,next)=>{res.set('Cache-Control','no-store');next();});
   app.use('/api',rateLimit({windowMs:15*60000,limit:1800,standardHeaders:'draft-8',legacyHeaders:false,message:{error:{code:'RATE_LIMIT',message:'Muitas requisições. Aguarde alguns minutos.'}}}));
   app.use(express.json({limit:'150kb',strict:true}));
   const loginLimiter=rateLimit({windowMs:15*60000,limit:30,standardHeaders:'draft-8',legacyHeaders:false,message:{error:{code:'RATE_LIMIT',message:'Muitas tentativas de acesso. Aguarde 15 minutos.'}}});
   app.get('/api/health',(req,res)=>res.json({status:'ok',version:'3.2.0'}));
+  if(config.firebaseOnly) app.use('/api',cloudAccounts(db,config,loginLimiter,files));
   app.get('/api/auth/options',(req,res)=>res.json({registration:config.registration}));
   app.post('/api/auth/register',loginLimiter,async(req,res)=>{
     assert(config.registration,403,'REGISTRATION_DISABLED','Cadastro de novas contas desativado.');
@@ -95,7 +97,7 @@ export function createApp(overrides={}) {
     const old=readSession(db,req);if(old)db.prepare('DELETE FROM sessions WHERE token_hash=?').run(old.token_hash);
     const csrf=createSession(db,config,user.id,res);res.json({user:profile(user),csrf});
   });
-  app.use('/api',requireAuth(db));
+  app.use('/api',(req,res,next)=>config.firebaseOnly?next():requireAuth(db)(req,res,next));
   app.post('/api/auth/logout',(req,res)=>{
     db.prepare('DELETE FROM sessions WHERE token_hash=?').run(req.session.token_hash);res.clearCookie('sonota_session',cookieOptions(config));res.sendStatus(204);
   });
@@ -138,7 +140,7 @@ export function createApp(overrides={}) {
     // V3.2.0: prepara o índice da Biblioteca em segundo plano. O bootstrap não espera
     // embeddings, então a tela abre rápido mesmo em um PC sem GPU.
     primeLibraryIndex(db,config,req.userId).catch(error=>console.warn('[sonota-search] Pré-indexação:',error.message));
-    res.json({profile:profile(db.prepare('SELECT * FROM users WHERE id=?').get(req.userId)),csrf:req.session.csrf,clients:listClients(db,req.userId),arrangements:listArrangements(db,req.userId),projects:listProjects(db,req.userId),docs:listDocs(db,req.userId),transcriptions:listJobs(db,req.userId),finance:financeSummary(db,req.userId),activity:projectActivity(db,req.userId),capabilities:{audio:worker.capabilities(),semanticConfigured:!!config.ollamaUrl,aiEnabled:config.aiEnabled,agentModel:config.agentModel,embeddingModel:config.embeddingModel}});
+    res.json({profile:(req.cloudProfile || profile(db.prepare('SELECT * FROM users WHERE id=?').get(req.userId))),csrf:req.session.csrf,clients:listClients(db,req.userId),arrangements:listArrangements(db,req.userId),projects:listProjects(db,req.userId),docs:listDocs(db,req.userId),transcriptions:listJobs(db,req.userId),finance:financeSummary(db,req.userId),activity:projectActivity(db,req.userId),capabilities:{audio:worker.capabilities(),semanticConfigured:!!config.ollamaUrl,aiEnabled:config.aiEnabled,agentModel:config.agentModel,embeddingModel:config.embeddingModel}});
   });
   app.get('/api/finance/summary',(req,res)=>res.json(financeSummary(db,req.userId)));
   app.get('/api/dashboard',(req,res)=>{
@@ -363,7 +365,7 @@ export function createApp(overrides={}) {
     const data=messageSchema.parse(req.body);res.json(await interpret(db,config,req.userId,data.message,data.context||{}));
   });
   app.post('/api/assistant/actions/:id/confirm',async(req,res)=>{
-    res.json(await confirmAssistantProposal({db,userId:req.userId,actionId:req.params.id,worker,files}));
+    res.json(await confirmAssistantProposal({db,config,userId:req.userId,actionId:req.params.id,worker,files}));
   });
   app.get('/api/ai/status',async(req,res)=>res.json(await ollamaStatus(config)));
 
@@ -463,7 +465,7 @@ export function createApp(overrides={}) {
   });
   app.get('/api/audit',(req,res)=>res.json(pagination(req,db.prepare('SELECT entity,entity_id entityId,action,details,created_at createdAt FROM audit WHERE user_id=? ORDER BY created_at DESC LIMIT 1000').all(req.userId).map(r=>({...r,details:JSON.parse(r.details)})))));
   app.get('/api/export',(req,res)=>{
-    const projects=listProjects(db,req.userId);res.attachment('sonota-dados.json').json({exportedAt:now(),profile:profile(db.prepare('SELECT * FROM users WHERE id=?').get(req.userId)),clients:listClients(db,req.userId),arrangements:listArrangements(db,req.userId),projects,projectVersions:Object.fromEntries(projects.map(p=>[p.id,listProjectVersions(db,req.userId,p.id)])),projectHistory:listProjectEvents(db,req.userId,null,5000),docs:listDocs(db,req.userId),jobs:listJobs(db,req.userId)});
+    const projects=listProjects(db,req.userId);res.attachment('sonota-dados.json').json({exportedAt:now(),profile:(req.cloudProfile || profile(db.prepare('SELECT * FROM users WHERE id=?').get(req.userId))),clients:listClients(db,req.userId),arrangements:listArrangements(db,req.userId),projects,projectVersions:Object.fromEntries(projects.map(p=>[p.id,listProjectVersions(db,req.userId,p.id)])),projectHistory:listProjectEvents(db,req.userId,null,5000),docs:listDocs(db,req.userId),jobs:listJobs(db,req.userId)});
   });
   app.use('/api',(req,res)=>res.status(404).json({error:{code:'NOT_FOUND',message:'Endpoint não encontrado.'}}));
   const ionicDir=path.join(config.publicDir,'ionic');

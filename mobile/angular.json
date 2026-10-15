@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "sonota": {
+    "app": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -77,13 +77,17 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "sonota:build:production"
+              "buildTarget": "app:build:production"
             },
             "development": {
-              "buildTarget": "sonota:build:development"
+              "buildTarget": "app:build:development"
             }
           },
-          "defaultConfiguration": "development"
+          "defaultConfiguration": "development",
+          "options": {
+            "proxyConfig": "proxy.conf.json",
+            "port": 8100
+          }
         }
       }
     }

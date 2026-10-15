@@ -62,7 +62,7 @@ test('upload validado, versões, limites, rollback e ausência de acesso estáti
  assert.equal(r.db.prepare('SELECT COUNT(*) n FROM files').get().n,2);
  // A limpeza do upload termina junto com a resposta e pode ainda estar em andamento no fs.
  await new Promise(resolve=>setTimeout(resolve,50));
- const managedNames=await readdir(path.join(r.dataDir,'uploads'));assert.equal(managedNames.length,2);assert.deepEqual(managedNames.sort(),['Faixa - v1.wav','Faixa revisada.wav'].sort());
+ const managedNames=(await readdir(path.join(r.dataDir,'uploads'),{recursive:true,withFileTypes:true})).filter(entry=>entry.isFile()).map(entry=>entry.name);assert.equal(managedNames.length,2);assert.deepEqual(managedNames.sort(),['Faixa - v1.wav','Faixa revisada.wav'].sort());
  assert.equal((await readdir(path.join(r.dataDir,'tmp'))).length,0);
  assert.equal((await fetch(r.base+'/data/sonota.sqlite')).status,404);
  assert.equal((await fetch(r.base+'/.env')).status,404);

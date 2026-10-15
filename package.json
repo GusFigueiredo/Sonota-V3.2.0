@@ -20,7 +20,9 @@
     "start:full": "npm run ui:build && npm start",
     "desktop:install": "npm --prefix desktop install",
     "desktop:build": "npm --prefix desktop run build",
-    "desktop:release": "powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/build-release.ps1"
+    "desktop:release": "powershell -NoProfile -ExecutionPolicy Bypass -File installer/windows/build-release.ps1",
+    "setup": "node scripts/setup.js",
+    "doctor": "node --env-file-if-exists=.env scripts/doctor.js"
   },
   "dependencies": {
     "express": "5.2.1",
@@ -28,6 +30,7 @@
     "helmet": "8.3.0",
     "multer": "2.4.0",
     "music-metadata": "11.16.1",
-    "zod": "4.6.5"
+    "zod": "4.6.5",
+    "firebase-admin": "^14.5.0"
   }
 }
