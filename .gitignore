@@ -10,10 +10,8 @@ node_modules/
 data/
 backups/
 
-# Variáveis de ambiente
-.env
-.env.*
-!.env.example
+# Variáveis de ambiente e credenciais são versionáveis neste repositório privado.
+# Atenção: segredos commitados permanecem no histórico do Git.
 
 # Python
 .venv*/
@@ -56,9 +54,3 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
-# Credenciais administrativas Firebase (nunca versionar)
-**/*firebase-adminsdk*.json
-**/sonota-admin*.json
-
-# Credenciais locais usadas após o clone
-.secrets/
