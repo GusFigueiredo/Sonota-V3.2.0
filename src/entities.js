@@ -26,6 +26,16 @@ export function entity(db,table,entityId,userId){
 }
 export function createEntity(db,table,input,userId,extra={}) {
   const def=definitions[table], data=def.schema.parse(input);references(db,table,data,userId);
+  // Proteção compartilhada por formulários, API e Assistente: duas gravações
+  // simultâneas com o mesmo nome não devem duplicar um cliente da conta.
+  // Este método é chamado dentro das transações dos fluxos de criação.
+  if(table==='clients'){
+    const normalizedName=String(data.name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLocaleLowerCase('pt-BR').replace(/\s+/g,' ');
+    const duplicate=db.prepare('SELECT id,name FROM clients WHERE user_id=?').all(userId).find(c=>
+      String(c.name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLocaleLowerCase('pt-BR').replace(/\s+/g,' ')===normalizedName
+    );
+    assert(!duplicate,409,'CLIENT_ALREADY_EXISTS',`Já existe um cliente chamado “${duplicate?.name||data.name}”. Confira a lista antes de cadastrar novamente.`);
+  }
   const entries=Object.entries(data), entityId=id(),time=now();
   const computed={...extra};
   if(table==='projects'){
