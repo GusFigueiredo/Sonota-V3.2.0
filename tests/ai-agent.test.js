@@ -171,3 +171,46 @@ test('V2.6.2 marca pagamento recebido sem chamar Ollama',async t=>{
   await call(runtime.base,u,'POST','/assistant/actions/'+response.data.action.id+'/confirm');
   assert.equal((await call(runtime.base,u,'GET','/projects/'+project.id)).data.paid,true);
 });
+
+
+test('cadastro manual impede clique duplicado mesmo com solicitações simultâneas',async t=>{
+  const runtime=await fixture(t,{aiEnabled:false}),u=await account(runtime.base);
+  const payload={name:'Cliente Único',type:'Pessoa',phone:'11999990000'};
+  const [a,b]=await Promise.all([
+    call(runtime.base,u,'POST','/clients',payload),
+    call(runtime.base,u,'POST','/clients',payload)
+  ]);
+  assert.deepEqual([a.status,b.status].sort(),[201,409]);
+  const records=(await call(runtime.base,u,'GET','/clients')).data.items.filter(c=>c.name==='Cliente Único');
+  assert.equal(records.length,1);
+});
+
+test('confirmação antiga do assistente não recria cliente já cadastrado manualmente',async t=>{
+  const runtime=await fixture(t,{aiEnabled:true,aiFastEnabled:true,ollamaUrl:'http://127.0.0.1:1'}),u=await account(runtime.base);
+  const prepared=await call(runtime.base,u,'POST','/assistant/message',{message:'cadastre um cliente chamado Acme Sonora'});
+  assert.equal(prepared.status,200);
+  assert.equal(prepared.data.model,'local-fast-parser');
+  assert.ok(prepared.data.action);
+  const created=await call(runtime.base,u,'POST','/clients',{name:'Acme Sonora',type:'Pessoa'});
+  assert.equal(created.status,201);
+  const confirmation=await call(runtime.base,u,'POST',`/assistant/actions/${prepared.data.action.id}/confirm`);
+  assert.equal(confirmation.status,409);
+  assert.equal(confirmation.data.error.code,'CLIENT_ALREADY_EXISTS');
+  const records=(await call(runtime.base,u,'GET','/clients')).data.items.filter(c=>c.name==='Acme Sonora');
+  assert.equal(records.length,1);
+});
+
+test('criação simples de cliente pelo chat independe da velocidade do modelo local',async t=>{
+  const runtime=await fixture(t,{aiEnabled:true,aiFastEnabled:true,ollamaUrl:'http://127.0.0.1:1'}),u=await account(runtime.base);
+  const before=Date.now();
+  const prepared=await call(runtime.base,u,'POST','/assistant/message',{message:'cadastre um cliente chamado Sonota Teste telefone 11999990000'});
+  assert.equal(prepared.status,200);
+  assert.equal(prepared.data.model,'local-fast-parser');
+  assert.ok(prepared.data.action);
+  assert.ok(Date.now()-before<3000);
+  const confirmed=await call(runtime.base,u,'POST',`/assistant/actions/${prepared.data.action.id}/confirm`);
+  assert.equal(confirmed.status,200);
+  const records=(await call(runtime.base,u,'GET','/clients')).data.items.filter(c=>c.name==='Sonota Teste');
+  assert.equal(records.length,1);
+  assert.equal(records[0].phone,'11999990000');
+});
