@@ -1,5 +1,42 @@
 <!doctype html>
 <html lang="pt-BR">
-<head><meta charset="utf-8"><title>Sonota</title></head>
-<body style="margin:0;background:#050505;color:#fff;font-family:system-ui"></body>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sonota • Inicializando</title>
+<style>
+  :root{color-scheme:dark}
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;height:100%;background:#101011;color:#f4f4f4;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+  body{display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .glow{position:fixed;width:min(65vw,680px);aspect-ratio:1;background:radial-gradient(circle,rgba(255,114,34,.13),transparent 67%);border-radius:50%;filter:blur(32px);animation:glow 3s ease-in-out infinite alternate}
+  main{width:min(86vw,440px);z-index:1;display:flex;flex-direction:column;align-items:center;text-align:center}
+  .brand{font-size:clamp(30px,4vw,45px);font-weight:790;letter-spacing:-.075em;margin-bottom:55px;color:#f6f6f6}
+  .brand span{color:#ff802c}
+  .ring{display:grid;place-items:center;width:180px;height:180px;border-radius:50%;background:conic-gradient(from -48deg,#ffb77e,#ff7a21 140deg,#4c3528 240deg,#232326 312deg,transparent 341deg);animation:spin 2.3s linear infinite;box-shadow:0 5px 35px rgba(255,115,25,.12);position:relative}
+  .ring:before{content:"";position:absolute;inset:17px;background:#101011;border-radius:50%}
+  .core{font-size:60px;color:#ff8a3b;animation:spin 2.3s linear reverse infinite;line-height:1;position:relative}
+  h1{font-size:20px;font-weight:720;margin:31px 0 6px}
+  #loading-status{color:#afabad;font-size:13px;margin:0;line-height:1.5}
+  #loading-status.error{color:#ffb08c}
+  .track{height:7px;width:100%;margin-top:35px;background:#29292c;border:1px solid #4a4441;border-radius:100px;overflow:hidden}
+  .fill{height:100%;width:44%;border-radius:100px;background:linear-gradient(90deg,#ffba82,#ff6b13);animation:scan 2.1s ease-in-out infinite}
+  footer{font-size:10px;letter-spacing:.23em;color:#817b79;margin-top:27px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes scan{from{transform:translateX(-108%)}to{transform:translateX(245%)}}
+  @keyframes glow{to{opacity:.35;transform:scale(1.2)}}
+  @media(prefers-reduced-motion:reduce){.ring,.core,.glow,.fill{animation:none}.fill{width:68%}}
+</style>
+</head>
+<body>
+<div class="glow" aria-hidden="true"></div>
+<main role="status" aria-live="polite">
+ <div class="brand">sono<span>ta</span></div>
+ <div class="ring" aria-hidden="true"><span class="core">♫</span></div>
+ <h1>Preparando seu estúdio</h1>
+ <p id="loading-status">Iniciando os recursos do Sonota…</p>
+ <div class="track" aria-hidden="true"><div class="fill"></div></div>
+ <footer>MENOS GESTÃO, MAIS MÚSICA</footer>
+</main>
+</body>
 </html>
