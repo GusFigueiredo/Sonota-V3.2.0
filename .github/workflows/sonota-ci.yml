@@ -37,3 +37,15 @@ jobs:
       - run: npm ci --prefix mobile
       - run: npm run ui:build
 
+  desktop:
+    name: Tauri Windows / compilação Rust
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: desktop/src-tauri
+      - name: Validação de compilação Windows
+        run: cargo check --manifest-path desktop/src-tauri/Cargo.toml
