@@ -3,7 +3,7 @@ name: Sonota - integridade e testes
 on:
   pull_request:
   push:
-    branches: [main, "fix/**"]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
