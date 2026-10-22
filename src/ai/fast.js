@@ -221,15 +221,15 @@ function parseDeterministicFast(text){
   if(findClients)return {mode:'fast',calls:[{tool:'buscar_clientes',args:findClients[1]?{consulta:trimCapture(findClients[1])}:{}}],source:'deterministic-list-clients'};
 
   // Consultas objetivas à Biblioteca: aplicamos filtros sem iniciar o modelo.
-  const bpmMinimum=source.match(/(?:pelo\\s+menos|no\\s+m[ií]nimo|a\\s+partir\\s+de|maior(?:es)?\\s+que|acima\\s+de)\\s*(\\d{2,3})\\s*(?:de\\s*)?bpm/i);
-  const bpmMaximum=source.match(/(?:no\\s+m[aá]ximo|at[eé]\\s+|menor(?:es)?\\s+que|abaixo\\s+de)\\s*(\\d{2,3})\\s*(?:de\\s*)?bpm/i);
+  const bpmMinimum=source.match(/(?:pelo\s+menos|no\s+m[ií]nimo|a\s+partir\s+de|maior(?:es)?\s+que|acima\s+de)\s*(\d{2,3})\s*(?:de\s*)?bpm/i);
+  const bpmMaximum=source.match(/(?:no\s+m[aá]ximo|at[eé]\s+|menor(?:es)?\s+que|abaixo\s+de)\s*(\d{2,3})\s*(?:de\s*)?bpm/i);
   if(/arranjos?|biblioteca/i.test(source)&&(bpmMinimum||bpmMaximum)){
     const args={};
     if(bpmMinimum)args.bpm_min=Number(bpmMinimum[1]);
     if(bpmMaximum)args.bpm_max=Number(bpmMaximum[1]);
     return {mode:'fast',calls:[{tool:'buscar_arranjos',args}],source:'deterministic-arrangements-bpm'};
   }
-  const exactArrangement=source.match(/^(?:me\\s+d[eê]|encontre|procure|busque|mostre|qual\\s+[eé])\\s+(?:um\\s+|o\\s+)?arranjo\\s+(?:com\\s+o\\s+nome|de\\s+nome|chamado)\\s+["“']?(.+?)["”']?[.!?]*$/i);
+  const exactArrangement=source.match(/^(?:me\s+d[eê]|encontre|procure|busque|mostre|qual\s+[eé])\s+(?:um\s+|o\s+)?arranjo\s+(?:com\s+o\s+nome|de\s+nome|chamado)\s+["“']?(.+?)["”']?[.!?]*$/i);
   if(exactArrangement)return {mode:'fast',calls:[{tool:'obter_arranjo',args:{arranjo:trimCapture(exactArrangement[1]).replace(/["”']$/,'')}}],source:'deterministic-arrangement-name'};
 
   // # Editar telefone/WhatsApp/e-mail de um cliente existente
