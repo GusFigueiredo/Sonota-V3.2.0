@@ -332,3 +332,24 @@ body.sonota-kanban-dragging,body.sonota-kanban-dragging *{cursor:grabbing!import
 .assistant-runtime-warning{margin:10px 12px 0;padding:10px;border:1px solid #4a2a12;background:rgba(255,108,0,.07);border-radius:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex:none}
 .assistant-runtime-warning>div{display:flex;flex-direction:column;gap:3px;min-width:0}.assistant-runtime-warning strong{font-size:10px;color:#ff9a33}.assistant-runtime-warning span{font-size:8px;color:#9b8c82;line-height:1.4}.assistant-runtime-warning button{flex:none}
 .assistant-runtime-ok{margin:8px 12px 0;font-size:8px;color:#7dd9ab;display:flex;align-items:center;gap:6px;flex:none}.assistant-runtime-ok>span{width:7px;height:7px;border-radius:50%;background:#79e9b8;box-shadow:0 0 0 3px rgba(121,233,184,.08)}
+
+/* Sonota • splash inicial animado; movimento respeita as preferências de acessibilidade. */
+.sonota-splash{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;min-height:100dvh;background:#101011;color:#f4f4f4;overflow:hidden;font-family:inherit}
+.sonota-splash-glow{position:absolute;width:min(75vw,720px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(246,111,32,.13),transparent 65%);filter:blur(28px);animation:sonota-glow 3s ease-in-out infinite alternate}
+.sonota-splash-content{position:relative;display:flex;flex-direction:column;align-items:center;width:min(88vw,440px);gap:12px;text-align:center}
+.sonota-splash-logo{width:min(225px,60vw);max-height:80px;object-fit:contain;margin-bottom:34px}
+.sonota-splash-ring{width:174px;height:174px;border-radius:50%;background:conic-gradient(from -55deg,#ffb071 0deg,#ff711e 120deg,#39302c 228deg,#232326 305deg,transparent 330deg);display:grid;place-items:center;animation:sonota-turn 2.3s linear infinite;box-shadow:0 6px 38px rgba(255,112,30,.08)}
+.sonota-splash-ring:before{content:"";width:142px;height:142px;border-radius:50%;background:#101011;position:absolute}
+.sonota-splash-ring-inner{position:relative;display:grid;place-items:center;width:100%;height:100%;animation:sonota-turn 2.3s linear reverse infinite}
+.sonota-splash-note{font-size:56px;line-height:1;color:#ff8835;text-shadow:0 0 22px rgba(255,110,25,.3)}
+.sonota-splash-title{font-size:19px;letter-spacing:.015em;margin-top:28px;color:#f6f6f6}
+.sonota-splash-caption{font-size:13px;color:#9b9a9d}
+.sonota-splash-progress{height:6px;width:100%;overflow:hidden;border-radius:99px;background:#28282b;margin-top:28px;border:1px solid #414144}
+.sonota-splash-progress span{display:block;width:40%;height:100%;border-radius:99px;background:linear-gradient(90deg,#ffb375,#ff6a15);animation:sonota-progress 1.9s ease-in-out infinite}
+.sonota-splash-foot{margin-top:18px;font-size:10px;letter-spacing:.25em;color:#7a7776}
+@keyframes sonota-turn{to{transform:rotate(360deg)}}
+@keyframes sonota-glow{to{opacity:.4;transform:scale(1.12)}}
+@keyframes sonota-progress{0%{transform:translateX(-105%)}100%{transform:translateX(255%)}}
+@media(prefers-reduced-motion:reduce){.sonota-splash-ring,.sonota-splash-ring-inner,.sonota-splash-glow,.sonota-splash-progress span{animation:none}.sonota-splash-progress span{width:65%}}
+
+.assistant-review-actions{display:flex;align-items:center;justify-content:space-between;gap:8px}.assistant-thinking button{margin-left:10px;font-size:11px;padding:5px 9px}

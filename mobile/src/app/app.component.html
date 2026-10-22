@@ -1,4 +1,15 @@
-@if(auth==='loading'){<div class="loading"><span>Carregando Sonota…</span></div>}
+@if(auth==='loading'){
+<div class="sonota-splash" role="status" aria-live="polite" aria-label="Iniciando Sonota">
+ <div class="sonota-splash-glow"></div>
+ <div class="sonota-splash-content">
+  <img class="sonota-splash-logo" src="assets/sonota-logo-name.png" alt="Sonota">
+  <div class="sonota-splash-ring" aria-hidden="true"><div class="sonota-splash-ring-inner"><span class="sonota-splash-note">♫</span></div></div>
+  <strong class="sonota-splash-title">Preparando seu estúdio</strong>
+  <span class="sonota-splash-caption">Organizando seu espaço para criar.</span>
+  <div class="sonota-splash-progress" aria-hidden="true"><span></span></div>
+  <span class="sonota-splash-foot">MENOS GESTÃO, MAIS MÚSICA</span>
+ </div>
+</div>}
 @else if(auth==='guest'){<app-login-page (authenticated)="reload()"/>}
 @else if(data){
 <div class="app-shell react-shell" [class.sidebar-collapsed]="!menuOpen">
