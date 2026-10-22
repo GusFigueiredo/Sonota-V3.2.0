@@ -29,7 +29,7 @@ export async function interpret(db,config,userId,text,context={}){
         // Em falha técnica do modo rápido, resposta local imediata e transparente.
         console.warn('[sonota-ai] Modo rápido indisponível; usando compatibilidade:',error.message);
         const fallback=legacyInterpret(db,userId,text);
-        const message=`${fallback.message}${fallback.action?'':'\\n\\n(A IA local demorou ou ficou indisponível; resultado produzido pelo modo compatível.)'}`;
+        const message=`${fallback.message}${fallback.action?'':'\n\n(A IA local demorou ou ficou indisponível; resultado produzido pelo modo compatível.)'}`;
         saveAiMessage(db,userId,'assistant','user',text,{context,fallback:true});
         saveAiMessage(db,userId,'assistant','assistant',message,{mode:'fallback'});
         return {...fallback,message,mode:'fallback',notice:'Tempo de resposta excedido no modo rápido. O Sonota usou o modo compatível.'};
