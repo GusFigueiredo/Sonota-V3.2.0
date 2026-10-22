@@ -23,7 +23,7 @@ import { notifyError, notifySuccess } from './utils';
 })
 export class AppComponent implements OnInit, OnDestroy {
  auth:'loading'|'guest'|'ready'='loading'; data:any=null; page='home'; projectId:string|null=null; fatal:any=null; menuOpen=window.innerWidth>820;
- readonly nav=[['home','Início','home'],['dashboard','Dashboard','dashboard'],['clientes','Clientes','clients'],['projetos','Projetos','projects'],['arranjos','Laboratório de arranjos','lab'],['biblioteca','Biblioteca','library'],['financeiro','Financeiro','finance']];
+ readonly nav=[['home','Início','home'],['dashboard','Dashboard','dashboard'],['clientes','Clientes','clients'],['biblioteca','Biblioteca','library'],['projetos','Projetos','projects'],['arranjos','Laboratório de arranjos','lab'],['financeiro','Financeiro','finance']];
  private jobStates=new Map<string,string>();
  private jobStatesReady=false;
  private notifiedJobStates=new Set<string>();
