@@ -214,3 +214,23 @@ test('criação simples de cliente pelo chat independe da velocidade do modelo l
   assert.equal(records.length,1);
   assert.equal(records[0].phone,'11999990000');
 });
+
+
+test('chat filtra arranjos por BPM mínimo e encontra nome exato sem Ollama',async t=>{
+  const runtime=await fixture(t,{aiEnabled:true,aiFastEnabled:true,ollamaUrl:'http://127.0.0.1:1'}),u=await account(runtime.base);
+  for(const [title,bpm] of [['teste1',80],['teste2',110],['teste3',150]]){
+    const created=await call(runtime.base,u,'POST','/arrangements',multipart({title,bpm,key:'C',genre:'Teste'}));
+    assert.equal(created.status,201);
+  }
+  const byBpm=await call(runtime.base,u,'POST','/assistant/message',{message:'me liste arranjos que tenham pelo menos 100 de bpm'});
+  assert.equal(byBpm.status,200);
+  assert.equal(byBpm.data.model,'local-fast-parser');
+  assert.match(byBpm.data.message,/teste2/);
+  assert.match(byBpm.data.message,/teste3/);
+  assert.doesNotMatch(byBpm.data.message,/teste1/);
+  const byName=await call(runtime.base,u,'POST','/assistant/message',{message:'me dê um arranjo com o nome "teste1"'});
+  assert.equal(byName.status,200);
+  assert.equal(byName.data.model,'local-fast-parser');
+  assert.match(byName.data.message,/teste1/);
+  assert.doesNotMatch(byName.data.message,/teste2/);
+});
