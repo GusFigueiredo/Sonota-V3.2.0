@@ -8,7 +8,7 @@ import { notifySuccess } from '../../utils';
 @Component({selector:'app-assistant',standalone:true,imports:[CommonModule,FormsModule,IconComponent],templateUrl:'./assistant.component.html'})
 export class AssistantComponent {
  @Input() context:any={}; @Output() changed=new EventEmitter<void>(); @Output() navigate=new EventEmitter<string>();
- open=false;text='';busy=false;pending:any=null;private requestGeneration=0;
+ open=false;text='';busy=false;confirming=false;pending:any=null;private requestGeneration=0;
  ai:any=null;aiChecking=false;aiRepairing=false;aiRepairMessage='';private aiTimer:any=null;
  readonly suggestions=['Quanto tenho para receber?','Cadastre um cliente chamado Lucas.','Crie um projeto para Marina.','Mostre projetos em produção.'];
  messages:any[]=[{role:'assistant',text:'Oi! Sou o agente local do Sonota. Posso consultar dados e preparar criações, edições e exclusões para sua confirmação. O cadastro de novos arranjos continua sendo feito pela Biblioteca.'}];
@@ -48,6 +48,7 @@ export class AssistantComponent {
   }catch{this.aiRepairing=false;if(this.aiTimer){clearInterval(this.aiTimer);this.aiTimer=null}}
  }
  cancelRequest(){
+  if(this.confirming)return;
   this.requestGeneration++;
   this.busy=false;
   this.pending=null;
@@ -58,5 +59,5 @@ export class AssistantComponent {
   this.messages.push({role:'assistant',text:'Proposta descartada. Nenhuma alteração foi aplicada.'});
  }
  async ask(q?:string){const value=String(q??this.text).trim();if(!value||this.busy)return;this.text='';this.messages.push({role:'user',text:value});this.busy=true;const generation=++this.requestGeneration;try{const r=await this.api.assistant(value,this.context);if(generation!==this.requestGeneration)return;this.messages.push({role:'assistant',text:r.message});this.pending=r.action||null;if(r.navigate){const target=r.navigate.replace('.html','').replace('index','home').replace('busca-ia','biblioteca').replace(/^busca$/,'biblioteca');this.navigate.emit(target);}if(r.notice)void this.checkAi()}catch(err:any){if(generation!==this.requestGeneration)return;this.messages.push({role:'assistant',text:err.message});void this.checkAi()}finally{if(generation===this.requestGeneration)this.busy=false}}
- async confirm(){if(!this.pending||this.busy)return;this.busy=true;try{const r=await this.api.confirmAction(this.pending.id);this.messages.push({role:'assistant',text:r.message||'Alteração salva.'});this.pending=null;notifySuccess('Alteração realizada com sucesso',r.message||'A ação do assistente foi aplicada.');this.changed.emit()}catch(err:any){this.messages.push({role:'assistant',text:err.message});if(err?.status===409)this.pending=null}finally{this.busy=false}}
+ async confirm(){if(!this.pending||this.busy)return;this.busy=true;this.confirming=true;try{const r=await this.api.confirmAction(this.pending.id);this.messages.push({role:'assistant',text:r.message||'Alteração salva.'});this.pending=null;notifySuccess('Alteração realizada com sucesso',r.message||'A ação do assistente foi aplicada.');this.changed.emit()}catch(err:any){this.messages.push({role:'assistant',text:err.message});if(err?.status===409)this.pending=null}finally{this.busy=false;this.confirming=false}}
 }
