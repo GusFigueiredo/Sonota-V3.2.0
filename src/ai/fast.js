@@ -197,6 +197,29 @@ function parseDeterministicFast(text){
     || source.match(/^(?:qual|quais)\s+(?:dos\s+)?(?:meus\s+)?projetos?.*?(?:arranjo)\s+["“'](.+?)["”'][.!?]*$/i);
   if(projectByArrangement){const arranjo=trimCapture(projectByArrangement[1]);if(arranjo)return {mode:'fast',calls:[{tool:'buscar_projetos',args:{arranjo}}],source:'deterministic-projects-by-arrangement'};}
 
+  // Cadastro simples de cliente é uma intenção determinística: sem inferência Qwen.
+  // Evita períodos de espera que permitem o mesmo cadastro ser feito manualmente.
+  const createClient=source.match(/^(?:criar|crie|cadastrar|cadastre|cadastra|adicionar|adicione|adiciona|inclua|inclui|registre|registrar)\s+(?:um\s+|uma\s+|novo\s+|nova\s+|o\s+|a\s+)*cliente\s+(?:chamad[oa]\s+|com\s+(?:o\s+)?nome\s+|de\s+nome\s+)?(.+)$/i);
+  if(createClient){
+    const rawName=createClient[1].replace(/[.!?]+$/,'').trim();
+    const cut=rawName.match(/^(.+?)(?=\s*(?:,|;)?\s+(?:com\s+)?(?:telefone|fone|whatsapp|e-?mail|email)\s*[:=]?\s*|$)/i);
+    const nome=trimCapture(cut?.[1]||'');
+    const telefone=rawName.match(/(?:telefone|fone)\s*[:=]?\s*([+()\d.\s-]{8,})/i);
+    const whatsapp=rawName.match(/(?:whatsapp|whats)\s*[:=]?\s*([+()\d.\s-]{8,})/i);
+    const email=rawName.match(/(?:e-?mail)\s*[:=]?\s*([^\s,;]+@[^\s,;]+)/i);
+    if(nome){
+      const args={nome};
+      if(telefone)args.telefone=trimCapture(telefone[1]);
+      if(whatsapp)args.whatsapp=trimCapture(whatsapp[1]);
+      if(email)args.email=trimCapture(email[1]);
+      return {mode:'fast',calls:[{tool:'propor_criar_cliente',args}],source:'deterministic-create-client'};
+    }
+  }
+
+  // Consultas objetivas de clientes também dispensam o modelo local.
+  const findClients=source.match(/^(?:liste|listar|mostre|mostrar|me\s+mostre|quais\s+s[aã]o)\s+(?:(?:os|meus|todos\s+os)\s+)?clientes(?:\s+(?:com\s+(?:o\s+)?nome|chamados?)\s+(.+))?[.!?]*$/i);
+  if(findClients)return {mode:'fast',calls:[{tool:'buscar_clientes',args:findClients[1]?{consulta:trimCapture(findClients[1])}:{}}],source:'deterministic-list-clients'};
+
   // # Editar telefone/WhatsApp/e-mail de um cliente existente
   // Ex.: "adicionar o telefone: 1196969969 ao cliente Alfredo PCD"
   const editVerb='(?:adicionar|adicione|adiciona|colocar|coloque|coloca|incluir|inclua|inclui|alterar|altere|altera|mudar|mude|muda|trocar|troque|troca|atualizar|atualize|atualiza)';
