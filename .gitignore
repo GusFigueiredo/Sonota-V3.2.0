@@ -14,6 +14,9 @@ backups/
 .env
 .env.*
 !.env.example
+.secrets/
+**/.secrets/
+**/*service-account*.json
 
 # Python
 .venv*/
