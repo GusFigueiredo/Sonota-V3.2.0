@@ -351,3 +351,5 @@ body.sonota-kanban-dragging,body.sonota-kanban-dragging *{cursor:grabbing!import
 @keyframes sonota-glow{to{opacity:.4;transform:scale(1.12)}}
 @keyframes sonota-progress{0%{transform:translateX(-105%)}100%{transform:translateX(255%)}}
 @media(prefers-reduced-motion:reduce){.sonota-splash-ring,.sonota-splash-ring-inner,.sonota-splash-glow,.sonota-splash-progress span{animation:none}.sonota-splash-progress span{width:65%}}
+
+.assistant-review-actions{display:flex;align-items:center;justify-content:space-between;gap:8px}.assistant-thinking button{margin-left:10px;font-size:11px;padding:5px 9px}
