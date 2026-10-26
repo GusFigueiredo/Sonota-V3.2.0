@@ -20,7 +20,7 @@
   <label class="field"><span>Cidade</span><input class="sonota-control" [(ngModel)]="form.city" name="client-city"></label>
   <label class="field"><span>Status</span><select class="sonota-control" [(ngModel)]="form.status" name="client-status"><option>Ativo</option><option>Prospect</option><option>Pausado</option><option>Inativo</option></select></label>
   <label class="field"><span>Observações</span><textarea class="sonota-control sonota-textarea" rows="4" [(ngModel)]="form.notes" name="client-notes"></textarea></label>
-  <button class="primary-btn" type="submit">Salvar cliente</button>
+  <button class="primary-btn" type="submit" [disabled]="saving">{{saving?'Salvando cliente…':'Salvar cliente'}}</button>
  </form>
 </app-modal>
 
@@ -30,5 +30,5 @@
 
 <app-modal [open]="!!confirm" title="Excluir cliente" [showFooter]="true" (close)="confirm=null">
  <p>Tem certeza de que deseja excluir {{confirm?.name||'este cliente'}}? Projetos vinculados impedem a exclusão.</p>
- <div modal-footer><button class="ghost-btn" type="button" (click)="confirm=null">Cancelar</button><button class="danger-btn" type="button" (click)="remove()">Excluir</button></div>
+ <div modal-footer><button class="ghost-btn" type="button" (click)="confirm=null">Cancelar</button><button class="danger-btn" type="button" [disabled]="removing" (click)="remove()">{{removing?'Excluindo…':'Excluir'}}</button></div>
 </app-modal>

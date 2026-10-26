@@ -1,0 +1,23 @@
+name: Exportar Sonota para teste
+on:
+  push:
+    branches:
+      - fix/ai-concorrencia-loading-auditoria
+  workflow_dispatch:
+
+jobs:
+  exportar:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Empacotar codigo versionado sem segredos
+        run: git archive --format=zip --output Sonota-Fonte-Branch-Teste.zip HEAD
+      - name: Disponibilizar arquivo ZIP do codigo
+        uses: actions/upload-artifact@v4
+        with:
+          name: Sonota-Fonte-Branch-Teste
+          path: Sonota-Fonte-Branch-Teste.zip
+          if-no-files-found: error
+          retention-days: 7

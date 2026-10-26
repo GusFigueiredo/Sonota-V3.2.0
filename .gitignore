@@ -10,8 +10,13 @@ node_modules/
 data/
 backups/
 
-# Variáveis de ambiente e credenciais são versionáveis neste repositório privado.
-# Atenção: segredos commitados permanecem no histórico do Git.
+# Configurações locais e credenciais nunca devem ser versionadas.
+.env
+.env.*
+!.env.example
+.secrets/
+**/.secrets/
+**/*service-account*.json
 
 # Python
 .venv*/

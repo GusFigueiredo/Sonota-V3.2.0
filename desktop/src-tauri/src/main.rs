@@ -227,31 +227,60 @@ fn main() {
         .setup(move |app| {
             let root = executable_root()?;
 
-            // V3.0: garante que o Ollama volte a responder mesmo após reiniciar o Windows.
-            // Se ele não estiver instalado, o backend ainda abre e a interface oferece reparo.
-            ensure_ollama_server(&root);
-
-            // Se uma instância válida do backend já estiver ativa, reutiliza-a.
-            if !health_check(SONOTA_PORT) {
-                let child = spawn_backend(&root)?;
-                *backend_for_setup
-                    .lock()
-                    .map_err(|_| "Falha ao registrar o processo do backend.")? = Some(child);
-            }
-
-            if !wait_for_backend(SONOTA_PORT, Duration::from_secs(25)) {
-                stop_backend(&backend_for_setup);
-                return Err("O backend do Sonota não iniciou corretamente.".into());
-            }
-
-            let url = Url::parse(&format!("http://127.0.0.1:{SONOTA_PORT}/app/"))?;
-            tauri::WebviewWindowBuilder::new(app, "main", WebviewUrl::External(url))
+            // Mostra imediatamente uma janela local, antes de aguardar Python,
+            // Ollama ou a API. Assim o usuário não encara uma tela preta.
+            let startup_window = tauri::WebviewWindowBuilder::new(
+                app, "main", WebviewUrl::App("index.html".into())
+            )
                 .title("Sonota")
                 .inner_size(1440.0, 900.0)
                 .min_inner_size(900.0, 620.0)
                 .resizable(true)
                 .center()
                 .build()?;
+
+            let backend_for_thread = Arc::clone(&backend_for_setup);
+            // Esperas bloqueantes ficam numa thread, para a janela continuar animada.
+            thread::spawn(move || {
+                let startup_result = (|| -> Result<Url, Box<dyn std::error::Error>> {
+                    // Se o Ollama estiver ausente, o Sonota ainda inicia e oferece reparo.
+                    ensure_ollama_server(&root);
+
+                    if !health_check(SONOTA_PORT) {
+                        let child = spawn_backend(&root)?;
+                        *backend_for_thread
+                            .lock()
+                            .map_err(|_| "Falha ao registrar o processo do backend.")? = Some(child);
+                    }
+                    if !wait_for_backend(SONOTA_PORT, Duration::from_secs(25)) {
+                        stop_backend(&backend_for_thread);
+                        return Err("O backend do Sonota não iniciou corretamente.".into());
+                    }
+                    Ok(Url::parse(&format!("http://127.0.0.1:{SONOTA_PORT}/app/"))?)
+                })();
+
+                match startup_result {
+                    Ok(url) => {
+                        let navigate_window = startup_window.clone();
+                        if let Err(error) = startup_window.run_on_main_thread(move || {
+                            if let Err(error) = navigate_window.navigate(url) {
+                                eprintln!("[sonota-desktop] Navegação: {error}");
+                            }
+                        }) {
+                            eprintln!("[sonota-desktop] Janela: {error}");
+                        }
+                    }
+                    Err(error) => {
+                        eprintln!("[sonota-desktop] Inicialização: {error}");
+                        let show_error = startup_window.clone();
+                        let _ = startup_window.run_on_main_thread(move || {
+                            let _ = show_error.eval(
+                                "document.getElementById('loading-status').textContent='Não foi possível iniciar o Sonota. Feche e abra novamente.'; document.getElementById('loading-status').classList.add('error');"
+                            );
+                        });
+                    }
+                }
+            });
 
             Ok(())
         })

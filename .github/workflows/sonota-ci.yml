@@ -1,0 +1,51 @@
+name: Sonota - integridade e testes
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  backend:
+    name: Backend / CRUD / IA / busca
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Checagem do projeto
+        run: npm run check
+      - name: Testes de integração isolados (sem Firebase/Ollama reais)
+        run: npm test
+
+  interface:
+    name: Angular / interface / carregamento
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci --prefix mobile
+      - run: npm run ui:build
+
+  desktop:
+    name: Tauri Windows / compilação Rust
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: desktop/src-tauri
+      - name: Validação de compilação Windows
+        run: cargo check --manifest-path desktop/src-tauri/Cargo.toml
